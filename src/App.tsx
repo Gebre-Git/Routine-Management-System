@@ -1,121 +1,186 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect, useRef } from 'react';
+import { initScene } from './animation';
+import { signInWithGoogle, signOutUser, onAuthChange } from './firebase';
+import type { User } from 'firebase/auth';
+import './index.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  // Init Three.js scene
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const cleanup = initScene(canvasRef.current);
+    // Trigger card entrance animation
+    const t = setTimeout(() => setVisible(true), 100);
+    return () => {
+      cleanup();
+      clearTimeout(t);
+    };
+  }, []);
+
+  // Auth state listener
+  useEffect(() => {
+    const unsub = onAuthChange((u) => {
+      setUser(u);
+      setAuthLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await signInWithGoogle();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Sign-in failed. Try again.';
+      // Only show meaningful errors
+      if (!message.includes('popup-closed') && !message.includes('cancelled')) {
+        setError('Sign-in failed. Check your Firebase config.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    setLoading(true);
+    try {
+      await signOutUser();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      {/* Three.js Canvas Background */}
+      <canvas ref={canvasRef} className="bg-canvas" />
 
-      <div className="ticks"></div>
+      {/* Gradient Overlay */}
+      <div className="gradient-overlay" />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {/* Floating orbs */}
+      <div className="orb orb-1" />
+      <div className="orb orb-2" />
+      <div className="orb orb-3" />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Login Card */}
+      <div className={`card-wrapper ${visible ? 'card-visible' : ''}`}>
+        <div className="glass-card">
+          {/* Top decoration */}
+          <div className="card-glow" />
+
+          {/* Logo / Brand */}
+          <div className="brand">
+            <div className="brand-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="brand-name">Routine OS</h1>
+              <p className="brand-tagline">Manage your world, beautifully</p>
+            </div>
+          </div>
+
+          <div className="divider" />
+
+          {authLoading ? (
+            <div className="loading-state">
+              <div className="spinner" />
+              <p>Initializing…</p>
+            </div>
+          ) : user ? (
+            /* Logged-in state */
+            <div className="logged-in">
+              <div className="avatar-wrapper">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="Profile" className="avatar" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="avatar-placeholder">
+                    {user.displayName?.[0]?.toUpperCase() ?? '?'}
+                  </div>
+                )}
+                <div className="avatar-ring" />
+              </div>
+
+              <div className="user-info">
+                <h2 className="user-name">Welcome back,</h2>
+                <p className="user-display">{user.displayName || 'User'}</p>
+                <p className="user-email">{user.email}</p>
+              </div>
+
+              <button
+                className="btn btn-secondary"
+                onClick={handleSignOut}
+                disabled={loading}
+              >
+                {loading ? <span className="btn-spinner" /> : null}
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            /* Sign-in state */
+            <div className="sign-in">
+              <h2 className="sign-in-title">Get Started</h2>
+              <p className="sign-in-subtitle">
+                Sign in to access your routines, tasks, and productivity dashboard.
+              </p>
+
+              {error && (
+                <div className="error-banner">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {error}
+                </div>
+              )}
+
+              <button
+                id="google-signin-btn"
+                className="btn btn-google"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="btn-spinner" />
+                ) : (
+                  <svg className="google-icon" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  </svg>
+                )}
+                <span>Continue with Google</span>
+              </button>
+
+              <p className="terms">
+                By continuing, you agree to our{' '}
+                <a href="#" className="terms-link">Terms</a> and{' '}
+                <a href="#" className="terms-link">Privacy Policy</a>.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Feature badges below card */}
+        <div className="feature-badges">
+          <span className="badge">📅 Smart Scheduling</span>
+          <span className="badge">⚡ Real-time Sync</span>
+          <span className="badge">🔒 Secure</span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
