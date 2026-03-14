@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { initScene } from './animation';
 import { signInWithGoogle, signOutUser, onAuthChange } from './firebase';
 import type { User } from 'firebase/auth';
-import './index.css';
+import './styles/style.scss';
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);

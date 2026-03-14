@@ -1,0 +1,22 @@
+// --- Colors ---
+$primary: #8b5cf6;
+$cyan: #06b6d4;
+$pink: #ec4899;
+
+$bg-dark-1: #1a0533;
+$bg-dark-2: #0a0a1a;
+$bg-dark-3: #00111a;
+
+$text-primary: #f1f5f9;
+$text-secondary: rgba(148, 163, 184, 0.75);
+$text-muted: rgba(100, 116, 139, 0.7);
+
+$glass-bg: rgba(255, 255, 255, 0.045);
+$glass-border: rgba(255, 255, 255, 0.1);
+
+// --- Typography ---
+$font-family: 'Inter', system-ui, sans-serif;
+
+// --- Animations ---
+$transition-smooth: 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+$transition-fast: 0.2s ease;

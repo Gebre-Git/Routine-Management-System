@@ -1,0 +1,262 @@
+@use "variables" as vars;
+@use "components";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ─── Reset & Base ─── */
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: vars.$font-family;
+}
+
+/* ─── App Shell ─── */
+.app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 20% 50%, vars.$bg-dark-1 0%, vars.$bg-dark-2 50%, vars.$bg-dark-3 100%);
+}
+
+/* ─── Three.js Canvas ─── */
+.bg-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 0;
+}
+
+/* ─── Gradient Overlay ─── */
+.gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 50%, rgba(vars.$primary, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 85% 30%, rgba(6, 182, 212, 0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 50% 85%, rgba(236, 72, 153, 0.08) 0%, transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ─── Ambient Orbs ─── */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 1;
+  animation: orbFloat 8s ease-in-out infinite;
+
+  &-1 {
+    width: 500px; height: 500px;
+    background: rgba(vars.$primary, 0.18);
+    top: -150px; left: -150px;
+    animation-delay: 0s;
+  }
+  &-2 {
+    width: 400px; height: 400px;
+    background: rgba(vars.$cyan, 0.15);
+    bottom: -100px; right: -100px;
+    animation-delay: -3s;
+  }
+  &-3 {
+    width: 300px; height: 300px;
+    background: rgba(vars.$pink, 0.12);
+    top: 30%; right: 20%;
+    animation-delay: -5s;
+  }
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(20px, -30px) scale(1.05); }
+  66%       { transform: translate(-15px, 20px) scale(0.97); }
+}
+
+/* ─── Card Wrapper ─── */
+.card-wrapper {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transform: translateY(32px) scale(0.96);
+  transition: opacity vars.$transition-smooth,
+              transform vars.$transition-smooth;
+  
+  &.card-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ─── Divider ─── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  margin-bottom: 24px;
+}
+
+/* ─── Loading State ─── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  color: vars.$text-secondary;
+  font-size: 14px;
+}
+
+.spinner {
+  width: 28px; height: 28px;
+  border: 2px solid rgba(vars.$primary, 0.2);
+  border-top-color: vars.$primary;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Sign-in Section ─── */
+.sign-in {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: vars.$text-primary;
+    letter-spacing: -0.3px;
+  }
+  &-subtitle {
+    font-size: 13.5px;
+    color: rgba(148, 163, 184, 0.75);
+    line-height: 1.6;
+  }
+}
+
+/* ─── Error Banner ─── */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #fca5a5;
+}
+
+.google-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+.btn-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ─── Terms ─── */
+.terms {
+  text-align: center;
+  font-size: 11.5px;
+  color: rgba(100, 116, 139, 0.8);
+  line-height: 1.6;
+
+  &-link {
+    color: rgba(vars.$primary, 0.8);
+    text-decoration: none;
+    transition: color vars.$transition-fast;
+
+    &:hover { color: #a78bfa; }
+  }
+}
+
+/* ─── Logged-in State ─── */
+.logged-in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.avatar-wrapper {
+  position: relative;
+  width: 80px; height: 80px;
+}
+
+.avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+
+  &-placeholder {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, vars.$primary, vars.$cyan);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  &-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, vars.$primary, vars.$cyan, vars.$pink) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    animation: ringPulse 2.5s ease-in-out infinite;
+  }
+}
+
+@keyframes ringPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.user-info { 
+  text-align: center; 
+
+  .user-name { 
+    font-size: 13px; 
+    font-weight: 400; 
+    color: rgba(148, 163, 184, 0.7); 
+    margin-bottom: 4px; 
+  }
+  .user-display { 
+    font-size: 20px; 
+    font-weight: 600; 
+    color: vars.$text-primary; 
+    letter-spacing: -0.3px; 
+  }
+  .user-email { 
+    font-size: 12px; 
+    color: vars.$text-muted; 
+    margin-top: 4px; 
+  }
+}
